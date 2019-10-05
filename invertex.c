@@ -10,6 +10,7 @@
 int main(int argc, char *argv[]){
     int np = NUM_SPAWNS; // número de processos que serão criados
     MPI_Comm parentcomm, intercomm;
+    MPI_Status st; // estrutura padrão do MPI, não é relevante para esse exemplo mas precisa ser atribuída.
 
     MPI_Init(&argc, &argv);
     MPI_Comm_get_parent(&parentcomm); // verifica qual é o comunicador para o processo pai
@@ -24,16 +25,30 @@ int main(int argc, char *argv[]){
 
         for(int i=0;i<np;i++){
             // Para cada processo filho, envia um valor (nesse caso, é o número do próprio processo)
+            // Os inteiros representam as palavras que serão encontradas pelo mestre
             MPI_Send(&i, 1, MPI_INT, i, 0, intercomm);
+
+            int res;
+            // O mestre irá receber, de cada palavra, a quantidade de vezes em que ela ocorre,
+            // aqui representada pelo valor res.
+            MPI_Recv(&res, 1, MPI_INT, i, 0, intercomm, &st);
+            printf("Master received %d from %d.\n", res, i);
         }
     } else{ // Caso haja um comunicador para o pai, significa que é um processo filho (escravo)
         int val; // variável que receberá o valor do mestre
-        MPI_Status st; // estrutura padrão do MPI, não é relevante para esse exemplo mas precisa ser atribuída.
-
-        // O processo escravo recebe um valor do processo pai
-        MPI_Recv(&val, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, parentcomm, &st);
         
-        printf("My value: %d\n", val);
+        // O processo escravo recebe um valor do processo pai
+        // No caso da lista invertida, esse valor seria uma palavra
+        MPI_Recv(&val, 1, MPI_INT, 0, 0, parentcomm, &st);
+
+        // Aqui, a operação de contar a quantidade de vezes em que a palavra
+        // ocorre no texto é dada pela multiplicação de val por 10
+        val = val*10;
+
+        // O processo filho envia o valor alterado para o mestre
+        MPI_Send(&val, 1, MPI_INT, 0, 0, parentcomm);
+        
+        printf("Sent value: %d\n", val);
         fflush(stdout);
     }
 
