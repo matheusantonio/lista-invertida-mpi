@@ -152,7 +152,7 @@ int *inverterLista(char *texto,char *palavra, int* tam){
     num++;
     vetor = realloc(vetor,num*sizeof(int));
     vetor[num-1]=-1;
-    *tam = num;
+    *tam = num+1;
     return vetor;
 }
 
@@ -161,6 +161,7 @@ void imprimir(int *vetor){
     int i;
     for(i=0;vetor[i]!=-1;i++){
         printf("%d ",vetor[i]);
+        fflush(stdout);
     }
 }
 
@@ -182,43 +183,48 @@ int main(int argc, char *argv[]){
 
         Chave *palavras;
         int qtde;
-        printf("Digite frase: ");
-        scanf("%[^\n]",frase);
+        //printf("Digite frase: ");
+        //scanf("%[^\n]",frase);
+        strcpy(frase, "uma frase legal");
         tratarDados(frase);
         //printf("%s",frase);
         tamFrase = strlen(frase);
         palavras = separar(frase);
         Chave *copy = entradasUnicas(copiar(palavras),&qtde);
         //imprimir(copy);
-
+        free(palavras);
         int np = qtde; // número de processos que serão criados
+        printf("quantidade: %d\n", np);
 
         // Cria várias instâncias de processos do arquivo invertex.e
         // intercomm é o comunicador que o pai utilizará para comunicar-se com os processos filhos.
         MPI_Comm_spawn("./invertex.e", MPI_ARGV_NULL, np, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &intercomm, MPI_ERRCODES_IGNORE);
 
-        int i=0;
-        while(copy!=NULL)
-        {
-            printf("%s: ",copy->valor);
+        //int i=0;
+        //while(copy!=NULL)
+        for(int i=0;i<np;i++){
+            
             //imprimir(inverterLista(frase,copy->valor));
-            tamWord = strlen(copy->valor);
-
+            
+            char word[30];
+            strcpy(word, copy->valor);
+            //fflush(stdout);
+            tamWord = strlen(word);
+            printf("%s(%d): ",word, tamWord);
+            fflush(stdin);
+            
             MPI_Send(&tamWord, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da palavra
-            MPI_Send(&copy->valor, tamWord, MPI_CHAR,i, 0, intercomm); // passa a palavra
+            MPI_Send(&word, tamWord, MPI_CHAR,i, 0, intercomm); // passa a palavra
             MPI_Send(&tamFrase, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da frase
             MPI_Send(&frase, tamFrase, MPI_CHAR, i, 0, intercomm); // passa a frase
 
-            printf("%d: Values sent.\n", i);
-            int tam, *val;
+            int tam, val[30];
 
             MPI_Recv(&tam, 1, MPI_INT, i, 0, intercomm, &st); // recebe o tamanho do vetor
             MPI_Recv(&val, tam, MPI_INT, i, 0, intercomm, &st); // recebe o vetor
-            
-            imprimir(val);
 
-            printf("\n");
-            i++;
+            //imprimir(val);
+
             copy = copy->prox;
         }
 
@@ -236,26 +242,26 @@ int main(int argc, char *argv[]){
         }*/
     } else{ // Caso haja um comunicador para o pai, significa que é um processo filho (escravo)
         
-        char* word;
+        char word[30];
 
         MPI_Recv(&tamWord, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da palavra
         MPI_Recv(&word, tamWord, MPI_CHAR, 0,0, parentcomm, &st); // recebe a palavra
+        
         MPI_Recv(&tamFrase, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da frase
         MPI_Recv(&frase, tamFrase, MPI_CHAR, 0, 0, parentcomm, &st); //recebe a frase
         
-        printf("\nValues received.\n");
+        printf("\nValues received.\nRecebido: %s - %d \nFrase: %s\n",word, tamWord, frase);
+        fflush(stdout);
 
-        printf("frase: %d, palavra: %d\n", tamFrase, tamWord);
 
-        printf("%s\n", frase);
-        printf("%s\n", word);
-
-        int tam;
+        int tam=0;
         int *res = inverterLista(frase, word, &tam);
-
-        printf("%d\n", tam);
+        
+        printf("Pos (tam: %d):", tam);
         imprimir(res);
         printf("\n");
+        fflush(stdout);
+
 
         MPI_Send(&tam, 1, MPI_INT, 0, 0, parentcomm); // passa o tamanho do vetor
         MPI_Send(&res, tam, MPI_INT, 0, 0, parentcomm); // passa o vetor
@@ -280,4 +286,6 @@ int main(int argc, char *argv[]){
     }
 
     MPI_Finalize();
+
+    return 0;
 }
