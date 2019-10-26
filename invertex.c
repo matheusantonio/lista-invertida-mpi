@@ -152,7 +152,7 @@ int *inverterLista(char *texto,char *palavra, int* tam){
     num++;
     vetor = realloc(vetor,num*sizeof(int));
     vetor[num-1]=-1;
-    *tam = num+1;
+    *tam = num;
     return vetor;
 }
 
@@ -211,7 +211,7 @@ int main(int argc, char *argv[]){
             //fflush(stdout);
             tamWord = strlen(word);
             printf("%s(%d): ",word, tamWord);
-            fflush(stdin);
+            fflush(stdout);
             
             MPI_Send(&tamWord, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da palavra
             MPI_Send(&word, tamWord, MPI_CHAR,i, 0, intercomm); // passa a palavra
@@ -222,6 +222,8 @@ int main(int argc, char *argv[]){
 
             MPI_Recv(&tam, 1, MPI_INT, i, 0, intercomm, &st); // recebe o tamanho do vetor
             MPI_Recv(&val, tam, MPI_INT, i, 0, intercomm, &st); // recebe o vetor
+
+            //printf("tamanho: %d\n", tam);
 
             //imprimir(val);
 
@@ -250,12 +252,13 @@ int main(int argc, char *argv[]){
         MPI_Recv(&tamFrase, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da frase
         MPI_Recv(&frase, tamFrase, MPI_CHAR, 0, 0, parentcomm, &st); //recebe a frase
         
-        printf("\nValues received.\nRecebido: %s - %d \nFrase: %s\n",word, tamWord, frase);
-        fflush(stdout);
+        //printf("\nValues received.\nRecebido: %s - %d \nFrase: %s\n",word, tamWord, frase);
+        //fflush(stdout);
 
 
-        int tam=0;
+        int tam;
         int *res = inverterLista(frase, word, &tam);
+        imprimir(inverterLista(frase, word, &tam));
         
         printf("Pos (tam: %d):", tam);
         imprimir(res);
