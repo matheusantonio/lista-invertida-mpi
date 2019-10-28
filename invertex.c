@@ -9,7 +9,7 @@
 #define NUM_SPAWNS 5
 
 typedef struct chave{
-    char valor[20];
+    char valor[30];
     int ordem;
     struct chave *prox;
 }Chave;
@@ -121,6 +121,7 @@ Chave *entradasUnicas(Chave *chaves,int *numero){
 
 
 int *inverterLista(char *texto,char *palavra, int* tam){
+    printf("DENTRO DA FUNCAO: frase: {%s}, palavra:{%s}\n", texto, palavra);
     int i=0,j=0;
     int num=0;
     int total;
@@ -186,7 +187,7 @@ int main(int argc, char *argv[]){
         //printf("Digite frase: ");
         //scanf("%[^\n]",frase);
         strcpy(frase, "uma frase legal");
-        tratarDados(frase);
+        //tratarDados(frase);
         //printf("%s",frase);
         tamFrase = strlen(frase);
         palavras = separar(frase);
@@ -210,7 +211,7 @@ int main(int argc, char *argv[]){
             strcpy(word, copy->valor);
             //fflush(stdout);
             tamWord = strlen(word);
-            printf("%s(%d): ",word, tamWord);
+            printf("\n%s(%d): ",word, tamWord);
             fflush(stdout);
             
             MPI_Send(&tamWord, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da palavra
@@ -223,9 +224,9 @@ int main(int argc, char *argv[]){
             MPI_Recv(&tam, 1, MPI_INT, i, 0, intercomm, &st); // recebe o tamanho do vetor
             MPI_Recv(&val, tam, MPI_INT, i, 0, intercomm, &st); // recebe o vetor
 
-            //printf("tamanho: %d\n", tam);
-
-            //imprimir(val);
+            imprimir(val);
+            printf("\n");
+            fflush(stdout);
 
             copy = copy->prox;
         }
@@ -252,22 +253,21 @@ int main(int argc, char *argv[]){
         MPI_Recv(&tamFrase, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da frase
         MPI_Recv(&frase, tamFrase, MPI_CHAR, 0, 0, parentcomm, &st); //recebe a frase
         
-        //printf("\nValues received.\nRecebido: %s - %d \nFrase: %s\n",word, tamWord, frase);
+        //printf("\nValues received.\nRecebido: {%s} - %d \nFrase: {%s}\n",word, tamWord, frase);
         //fflush(stdout);
-
 
         int tam;
         int *res = inverterLista(frase, word, &tam);
-        imprimir(inverterLista(frase, word, &tam));
+        //imprimir(inverterLista(frase, word, &tam));
         
-        printf("Pos (tam: %d):", tam);
+        printf("(slave) pos: ");
         imprimir(res);
         printf("\n");
         fflush(stdout);
 
 
         MPI_Send(&tam, 1, MPI_INT, 0, 0, parentcomm); // passa o tamanho do vetor
-        MPI_Send(&res, tam, MPI_INT, 0, 0, parentcomm); // passa o vetor
+        MPI_Send(res, tam, MPI_INT, 0, 0, parentcomm); // passa o vetor
         
         /*
         int val; // variável que receberá o valor do mestre
