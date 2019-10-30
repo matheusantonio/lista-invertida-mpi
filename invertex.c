@@ -120,8 +120,8 @@ Chave *entradasUnicas(Chave *chaves,int *numero){
 }
 
 
-int *inverterLista(char *texto,char *palavra, int* tam){
-    printf("DENTRO DA FUNCAO: frase: {%s}, palavra:{%s}\n", texto, palavra);
+int *inverterLista(char *texto,char *palavra, int *tam){
+    //printf("DENTRO DA FUNCAO: frase: {%s}, palavra:{%s}\n", texto, palavra);
     int i=0,j=0;
     int num=0;
     int total;
@@ -184,10 +184,10 @@ int main(int argc, char *argv[]){
 
         Chave *palavras;
         int qtde;
-        //printf("Digite frase: ");
-        //scanf("%[^\n]",frase);
-        strcpy(frase, "uma frase legal");
-        //tratarDados(frase);
+        printf("Digite frase: ");
+        scanf("%[^\n]",frase);
+        //strcpy(frase, "uma frase legal");
+        tratarDados(frase);
         //printf("%s",frase);
         tamFrase = strlen(frase);
         palavras = separar(frase);
@@ -209,13 +209,12 @@ int main(int argc, char *argv[]){
             
             char word[30];
             strcpy(word, copy->valor);
-            //fflush(stdout);
             tamWord = strlen(word);
             printf("\n%s(%d): ",word, tamWord);
             fflush(stdout);
             
-            MPI_Send(&tamWord, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da palavra
-            MPI_Send(&word, tamWord, MPI_CHAR,i, 0, intercomm); // passa a palavra
+            //MPI_Send(&tamWord, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da palavra
+            MPI_Send(&word, 30, MPI_CHAR,i, 0, intercomm); // passa a palavra
             MPI_Send(&tamFrase, 1, MPI_INT, i, 0, intercomm); // passa o tamanho da frase
             MPI_Send(&frase, tamFrase, MPI_CHAR, i, 0, intercomm); // passa a frase
 
@@ -247,8 +246,8 @@ int main(int argc, char *argv[]){
         
         char word[30];
 
-        MPI_Recv(&tamWord, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da palavra
-        MPI_Recv(&word, tamWord, MPI_CHAR, 0,0, parentcomm, &st); // recebe a palavra
+        //MPI_Recv(&tamWord, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da palavra
+        MPI_Recv(&word, 30, MPI_CHAR, 0,0, parentcomm, &st); // recebe a palavra
         
         MPI_Recv(&tamFrase, 1, MPI_INT, 0, 0, parentcomm, &st); // recebe o tamanho da frase
         MPI_Recv(&frase, tamFrase, MPI_CHAR, 0, 0, parentcomm, &st); //recebe a frase
@@ -256,14 +255,14 @@ int main(int argc, char *argv[]){
         //printf("\nValues received.\nRecebido: {%s} - %d \nFrase: {%s}\n",word, tamWord, frase);
         //fflush(stdout);
 
-        int tam;
+        int tam=1;
         int *res = inverterLista(frase, word, &tam);
         //imprimir(inverterLista(frase, word, &tam));
         
-        printf("(slave) pos: ");
-        imprimir(res);
-        printf("\n");
-        fflush(stdout);
+        //printf("(slave) pos: ");
+        //imprimir(res);
+        //printf("\n");
+        //fflush(stdout);
 
 
         MPI_Send(&tam, 1, MPI_INT, 0, 0, parentcomm); // passa o tamanho do vetor
