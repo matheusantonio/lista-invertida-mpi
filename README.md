@@ -7,12 +7,4 @@ Para compilar:
 mpicc invertex.c -o invertex.e
 
 Para executar:
-mpirun ./invertex.e
-
-Multiplicação de matrizes: Implementação em MPI de uma multiplicação distribuída de matrizes.
-
-Para compilar:
-mpicc matrixmul.c -o matrixmul.e
-
-Para executar:
-mpirun -n [numero de processos] ./matrixmul.e
+mpirun ./invertex.e [nome do arquivo onde encontra-se o texto]

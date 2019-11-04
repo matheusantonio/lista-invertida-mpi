@@ -180,8 +180,17 @@ int main(int argc, char *argv[]){
 
         Chave *palavras;
         int qtde;
-        printf("Digite frase: ");
-        scanf("%[^\n]",frase);
+        //printf("Digite frase: ");
+        //scanf("%[^\n]",frase);
+        int siz=0;
+        FILE *arq = fopen(argv[1], "r");
+        while(!feof(arq)){
+            fscanf(arq, "%c", &frase[siz]);
+            siz++;
+        }
+        printf("%s\n", frase);
+        printf("--------------");
+
         tratarDados(frase);
         tamFrase = strlen(frase);
         palavras = separar(frase);
